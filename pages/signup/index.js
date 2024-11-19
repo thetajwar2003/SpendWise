@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
+import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
     Container,
     Box,
@@ -7,23 +11,36 @@ import {
     Typography,
     Grid,
 } from "@mui/material";
-import Link from "next/link";
+
+const schema = yup.object({
+    firstName: yup.string().required("First Name is required"),
+    lastName: yup.string().required("Last Name is required"),
+    email: yup.string().email("Invalid email address").required("Email is required"),
+    password: yup
+        .string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+    confirmPassword: yup
+        .string()
+        .oneOf([yup.ref("password"), null], "Passwords must match")
+        .required("Confirm Password is required"),
+});
 
 export default function SignUp() {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const router = useRouter();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            alert("Passwords do not match");
-            return;
+    const onSubmit = (data) => {
+        console.log("Sign-Up Data:", data);
+        if (data.firstName && data.lastName && data.email && data.password) {
+            router.push("/dashboard");
         }
-        // Handle sign-up logic here
-        console.log("Sign-Up Details:", { firstName, lastName, email, password });
     };
 
     return (
@@ -41,7 +58,7 @@ export default function SignUp() {
                 </Typography>
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     noValidate
                     sx={{ mt: 1 }}
                 >
@@ -51,11 +68,9 @@ export default function SignUp() {
                         fullWidth
                         id="firstName"
                         label="First Name"
-                        name="firstName"
-                        autoComplete="given-name"
-                        autoFocus
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        {...register("firstName")}
+                        error={!!errors.firstName}
+                        helperText={errors.firstName?.message}
                     />
                     <TextField
                         margin="normal"
@@ -63,10 +78,9 @@ export default function SignUp() {
                         fullWidth
                         id="lastName"
                         label="Last Name"
-                        name="lastName"
-                        autoComplete="family-name"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        {...register("lastName")}
+                        error={!!errors.lastName}
+                        helperText={errors.lastName?.message}
                     />
                     <TextField
                         margin="normal"
@@ -74,45 +88,40 @@ export default function SignUp() {
                         fullWidth
                         id="email"
                         label="Email Address"
-                        name="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        {...register("email")}
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        name="password"
+                        id="password"
                         label="Password"
                         type="password"
-                        id="password"
-                        autoComplete="new-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        {...register("password")}
+                        error={!!errors.password}
+                        helperText={errors.password?.message}
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        name="confirmPassword"
+                        id="confirmPassword"
                         label="Confirm Password"
                         type="password"
-                        id="confirmPassword"
-                        autoComplete="new-password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        {...register("confirmPassword")}
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword?.message}
                     />
-                    <Link href='dashboard'>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                        >
-                            Sign Up
-                        </Button>
-                    </Link>
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Sign Up
+                    </Button>
                     <Grid container>
                         <Grid item>
                             <Typography

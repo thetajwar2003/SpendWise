@@ -11,7 +11,6 @@ import {
     BankingExpensesCategories,
     BankingLoanWheel
 } from '../../components/bank';
-import { News } from '../../components/news';
 
 
 // ----------------------------------------------------------------------
@@ -21,16 +20,6 @@ const RootStyle = styled(Page)(({ theme }) => ({
     overflow: 'hidden',
 }));
 
-// export const getStaticProps = async () => {
-//     const res = await fetch("https://mqqniutdba.execute-api.us-east-1.amazonaws.com/default/getMyNewsApiKey");
-//     const data = await res.json();
-//     const id = data.body.clientId.newsApiKey;
-//     return {
-//         props: {
-//             newsKey: id
-//         }
-//     };
-// };
 
 export default function Dashboard() {
     return (
@@ -79,9 +68,6 @@ export default function Dashboard() {
                     <Grid item xs={12} md={4}>
                         <BankingLoanWheel />
                     </Grid>
-                    {/* <Grid item xs={12} md={12}>
-                        <News apiKey={newsKey} />
-                    </Grid> */}
                 </Grid>
             </Container>
         </RootStyle>

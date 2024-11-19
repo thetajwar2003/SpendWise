@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
+import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
     Container,
     Box,
@@ -7,16 +11,27 @@ import {
     Typography,
     Grid,
 } from "@mui/material";
-import Link from "next/link";
+
+const schema = yup.object({
+    email: yup.string().email("Invalid email address").required("Email is required"),
+    password: yup.string().required("Password is required"),
+});
 
 export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const router = useRouter();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle login logic here
-        console.log("Email:", email, "Password:", password);
+    const onSubmit = (data) => {
+        console.log("Login Data:", data);
+        if (data.email && data.password) {
+            router.push("/dashboard");
+        }
     };
 
     return (
@@ -34,7 +49,7 @@ export default function Login() {
                 </Typography>
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     noValidate
                     sx={{ mt: 1 }}
                 >
@@ -44,34 +59,32 @@ export default function Login() {
                         fullWidth
                         id="email"
                         label="Email Address"
-                        name="email"
                         autoComplete="email"
                         autoFocus
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        {...register("email")}
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        name="password"
                         label="Password"
                         type="password"
                         id="password"
                         autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        {...register("password")}
+                        error={!!errors.password}
+                        helperText={errors.password?.message}
                     />
-                    <Link href="/dashboard">
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                        >
-                            Sign In
-                        </Button>
-                    </Link>
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Sign In
+                    </Button>
                     <Grid container>
                         <Grid item xs>
                             <Typography
