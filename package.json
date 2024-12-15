@@ -27,12 +27,13 @@
     "react-apexcharts": "^1.4.0",
     "react-dom": "18.1.0",
     "react-hook-form": "^7.53.2",
-    "react-plaid-link": "^3.3.2",
+    "react-plaid-link": "^3.6.1",
     "react-router-dom": "^6.3.0",
     "react-slick": "^0.29.0",
     "slick-carousel": "^1.8.1",
     "styled-components": "^5.3.5",
     "sweetalert2": "^11.4.14",
+    "uuid": "^11.0.3",
     "yup": "^1.4.0"
   }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -10,11 +10,15 @@ import {
     Button,
     Typography,
     Grid,
+    CircularProgress,
 } from "@mui/material";
+import { usePlaidLink } from "react-plaid-link";
+import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 
 const schema = yup.object({
-    firstName: yup.string().required("First Name is required"),
-    lastName: yup.string().required("Last Name is required"),
+    first_name: yup.string().required("First Name is required"),
+    last_name: yup.string().required("Last Name is required"),
     email: yup.string().email("Invalid email address").required("Email is required"),
     password: yup
         .string()
@@ -27,7 +31,12 @@ const schema = yup.object({
 });
 
 export default function SignUp() {
+    const uniqueId = uuidv4();
+
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [linkToken, setLinkToken] = useState(null);
+
     const {
         register,
         handleSubmit,
@@ -36,12 +45,56 @@ export default function SignUp() {
         resolver: yupResolver(schema),
     });
 
-    const onSubmit = (data) => {
-        console.log("Sign-Up Data:", data);
-        if (data.firstName && data.lastName && data.email && data.password) {
-            router.push("/dashboard");
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            // Send signup data to backend
+            const signupResponse = await axios.post("http://127.0.0.1:5000/auth/register", data);
+
+            if (signupResponse.status === 201) {
+                console.log(signupResponse);
+                // Fetch Plaid Link token
+                const tokenResponse = await axios.post(
+                    "http://127.0.0.1:5000/plaid/create_link_token",
+                    {
+                        user_id: signupResponse.data.user_id, // Replace with actual unique user ID
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+
+                setLinkToken(tokenResponse.data.link_token);
+            }
+        } catch (error) {
+            console.error("Error during signup or Plaid setup:", error);
+        } finally {
+            setLoading(false);
         }
     };
+
+    // Initialize Plaid Link
+    const { open, ready } = usePlaidLink({
+        token: linkToken,
+        onSuccess: (publicToken) => {
+            // Send the public token to the backend to exchange for an access token
+            axios.post("http://127.0.0.1:5000/plaid/exchange_public_token", { public_token: publicToken })
+                .then((response) => {
+                    console.log("Access Token:", response.data.access_token);
+                    router.push("/dashboard");
+                })
+                .catch((error) => console.error("Error exchanging public token:", error));
+        },
+        onExit: (error) => {
+            if (error) {
+                console.error("Plaid Link exited with error:", error);
+            }
+            router.push("/dashboard");
+        },
+    });
 
     return (
         <Container maxWidth="xs">
@@ -66,21 +119,21 @@ export default function SignUp() {
                         margin="normal"
                         required
                         fullWidth
-                        id="firstName"
+                        id="first_name"
                         label="First Name"
-                        {...register("firstName")}
-                        error={!!errors.firstName}
-                        helperText={errors.firstName?.message}
+                        {...register("first_name")}
+                        error={!!errors.first_name}
+                        helperText={errors.first_name?.message}
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        id="lastName"
+                        id="last_name"
                         label="Last Name"
-                        {...register("lastName")}
-                        error={!!errors.lastName}
-                        helperText={errors.lastName?.message}
+                        {...register("last_name")}
+                        error={!!errors.last_name}
+                        helperText={errors.last_name?.message}
                     />
                     <TextField
                         margin="normal"
@@ -119,22 +172,34 @@ export default function SignUp() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        disabled={loading}
                     >
-                        Sign Up
+                        {loading ? <CircularProgress size={24} /> : "Sign Up"}
                     </Button>
-                    <Grid container>
-                        <Grid item>
-                            <Typography
-                                variant="body2"
-                                component="a"
-                                href="/login"
-                                sx={{ textDecoration: "none" }}
-                            >
-                                {"Already have an account? Login"}
-                            </Typography>
-                        </Grid>
-                    </Grid>
                 </Box>
+                {linkToken && ready && (
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                        onClick={open}
+                        sx={{ mt: 3 }}
+                    >
+                        Connect Your Bank Account
+                    </Button>
+                )}
+                <Grid container>
+                    <Grid item>
+                        <Typography
+                            variant="body2"
+                            component="a"
+                            href="/login"
+                            sx={{ textDecoration: "none" }}
+                        >
+                            {"Already have an account? Login"}
+                        </Typography>
+                    </Grid>
+                </Grid>
             </Box>
         </Container>
     );
