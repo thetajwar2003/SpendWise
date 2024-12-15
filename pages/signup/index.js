@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import { usePlaidLink } from "react-plaid-link";
 import axios from "axios";
-import { v4 as uuidv4 } from 'uuid';
 
 const schema = yup.object({
     first_name: yup.string().required("First Name is required"),
@@ -31,11 +30,10 @@ const schema = yup.object({
 });
 
 export default function SignUp() {
-    const uniqueId = uuidv4();
-
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [linkToken, setLinkToken] = useState(null);
+    const [userId, setUserId] = useState(null);
 
     const {
         register,
@@ -52,7 +50,7 @@ export default function SignUp() {
             const signupResponse = await axios.post("http://127.0.0.1:5000/auth/register", data);
 
             if (signupResponse.status === 201) {
-                console.log(signupResponse);
+                setUserId(signupResponse.data.user_id);
                 // Fetch Plaid Link token
                 const tokenResponse = await axios.post(
                     "http://127.0.0.1:5000/plaid/create_link_token",
@@ -81,9 +79,8 @@ export default function SignUp() {
         token: linkToken,
         onSuccess: (publicToken) => {
             // Send the public token to the backend to exchange for an access token
-            axios.post("http://127.0.0.1:5000/plaid/exchange_public_token", { public_token: publicToken })
+            axios.post("http://127.0.0.1:5000/plaid/exchange_public_token", { public_token: publicToken, user_id: userId })
                 .then((response) => {
-                    console.log("Access Token:", response.data.access_token);
                     router.push("/dashboard");
                 })
                 .catch((error) => console.error("Error exchanging public token:", error));

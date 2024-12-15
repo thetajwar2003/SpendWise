@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -10,8 +11,10 @@ import {
     Button,
     Typography,
     Grid,
+    CircularProgress,
 } from "@mui/material";
 
+// Validation schema
 const schema = yup.object({
     email: yup.string().email("Invalid email address").required("Email is required"),
     password: yup.string().required("Password is required"),
@@ -19,6 +22,9 @@ const schema = yup.object({
 
 export default function Login() {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const {
         register,
         handleSubmit,
@@ -27,10 +33,26 @@ export default function Login() {
         resolver: yupResolver(schema),
     });
 
-    const onSubmit = (data) => {
-        console.log("Login Data:", data);
-        if (data.email && data.password) {
+    const onSubmit = async (data) => {
+        setLoading(true);
+        setError("");
+
+        try {
+            // Make the login request
+            const response = await axios.post("http://127.0.0.1:5000/auth/login", {
+                email: data.email,
+                password: data.password,
+            });
+
+            console.log("Login Successful:", response.data);
+
+            // Redirect to dashboard on success
             router.push("/dashboard");
+        } catch (err) {
+            console.error("Login Error:", err.response?.data?.error || err.message);
+            setError(err.response?.data?.error || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -47,6 +69,11 @@ export default function Login() {
                 <Typography component="h1" variant="h5">
                     Login
                 </Typography>
+                {error && (
+                    <Typography color="error" sx={{ mt: 2 }}>
+                        {error}
+                    </Typography>
+                )}
                 <Box
                     component="form"
                     onSubmit={handleSubmit(onSubmit)}
@@ -82,8 +109,9 @@ export default function Login() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        disabled={loading}
                     >
-                        Sign In
+                        {loading ? <CircularProgress size={24} /> : "Sign In"}
                     </Button>
                     <Grid container>
                         <Grid item xs>
