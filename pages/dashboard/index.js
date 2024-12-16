@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useRouter } from 'next/router';
 import { fetchTransactionSummary, fetchUserBankAccounts } from '../api/transactions';
 import TabsLayout from '../../layouts/TabLayout';
 import DashboardSection from '../../sections/DashboardSection';
@@ -23,6 +24,8 @@ const ContentStyle = styled(Box)(({ theme }) => ({
 }));
 
 export default function Dashboard() {
+    const router = useRouter();
+    const { tab } = router.query; // Read tab index from query parameters
     const [currentTab, setCurrentTab] = useState(0);
     const [transactionData, setTransactionData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -43,6 +46,12 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
+        if (tab !== undefined) {
+            setCurrentTab(Number(tab)); // Set tab from URL parameter
+        }
+    }, [tab]);
+
+    useEffect(() => {
         const fetchAccounts = async () => {
             if (currentTab === 1 && accessToken && userId) {
                 try {
@@ -59,7 +68,6 @@ export default function Dashboard() {
 
         fetchAccounts();
     }, [currentTab, accessToken, userId]);
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -81,6 +89,7 @@ export default function Dashboard() {
 
     const handleTabChange = (event, newValue) => {
         setCurrentTab(newValue);
+        router.push(`/dashboard?tab=${ newValue }`, undefined, { shallow: true }); // Update URL query parameter
     };
 
     const tabs = [

@@ -88,7 +88,7 @@ export default function AccountDetails() {
             <Box sx={{ width: '100%', maxWidth: 960, mb: 2 }}>
                 <Button
                     startIcon={<ArrowBack />}
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push('/dashboard?tab=1')}
                     sx={{ color: '#333' }}
                 >
                     Back to Dashboard

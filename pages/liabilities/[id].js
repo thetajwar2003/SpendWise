@@ -28,7 +28,7 @@ export default function LiabilityPage() {
                 {/* Back Button */}
                 <Button
                     startIcon={<ArrowBack />}
-                    onClick={() => router.push("/dashboard")}
+                    onClick={() => router.push("/dashboard?tab=2")}
                     sx={{ color: "#333", fontWeight: "bold" }}
                 >
                     Back to Dashboard
