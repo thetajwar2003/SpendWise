@@ -44,7 +44,12 @@ export default function Login() {
                 password: data.password,
             });
 
-            console.log("Login Successful:", response.data);
+            // store user_id and access_token in local storage
+            localStorage.setItem("user_id", response.data.user_id);
+            localStorage.setItem("access_token", response.data.access_token);
+            localStorage.setItem("refresh_token", response.data.refresh_token);
+            localStorage.setItem("id_token", response.data.id_token);
+
 
             // Redirect to dashboard on success
             router.push("/dashboard");

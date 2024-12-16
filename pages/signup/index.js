@@ -81,7 +81,7 @@ export default function SignUp() {
             // Send the public token to the backend to exchange for an access token
             axios.post("http://127.0.0.1:5000/plaid/exchange_public_token", { public_token: publicToken, user_id: userId })
                 .then((response) => {
-                    router.push("/dashboard");
+                    router.push("/login");
                 })
                 .catch((error) => console.error("Error exchanging public token:", error));
         },
@@ -89,7 +89,7 @@ export default function SignUp() {
             if (error) {
                 console.error("Plaid Link exited with error:", error);
             }
-            router.push("/dashboard");
+            router.push("/signup");
         },
     });
 

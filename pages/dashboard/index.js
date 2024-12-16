@@ -1,75 +1,81 @@
-// @mui
-import { Grid, Container, Stack, Typography, Divider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-// components
-import Page from '../../components/Page';
-// sections
-import {
-    BankingWidgetSummary,
-    BankingCurrentBalance,
-    BankingBalanceStatistics,
-    BankingExpensesCategories,
-    BankingLoanWheel
-} from '../../components/bank';
+import { fetchTransactionSummary } from '../api/transactions';
+import TabsLayout from '../../layouts/TabLayout';
+import DashboardSection from '../../sections/DashboardSection';
 
-
-// ----------------------------------------------------------------------
-const RootStyle = styled(Page)(({ theme }) => ({
-    margin: '0px',
-    padding: '0px',
+const RootStyle = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    height: '100vh',
     overflow: 'hidden',
 }));
 
+const ContentStyle = styled(Box)(({ theme }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    overflowY: 'auto',
+    backgroundColor: theme.palette.background.paper,
+}));
 
 export default function Dashboard() {
+    const [currentTab, setCurrentTab] = useState(0);
+    const [transactionData, setTransactionData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const user_id = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null;
+    const access_token = typeof window !== 'undefined' ? localStorage.getItem("access_token") : null;
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchTransactionSummary(access_token, user_id);
+                setTransactionData(data);
+            } catch (error) {
+                setError('Failed to fetch transaction summary');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [access_token, user_id]);
+
+    const handleTabChange = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
+
+    const tabs = [
+        { label: 'Overview' },
+        { label: 'Accounts' },
+        { label: 'Liabilities' },
+    ];
+
     return (
-        <RootStyle title="General: Banking">
-            <Container maxWidth={'lg'}>
+        <RootStyle>
+            {/* Tabs Navigation */}
+            <TabsLayout tabs={tabs} currentTab={currentTab} onTabChange={handleTabChange} />
 
-                <Grid container spacing={3} sx={{ mt: 2, mb: 2 }}>
-                    <Grid item xs={12}>
-                        <Typography variant='h2'>
-                            Welcome John!
-                        </Typography>
-                        <Divider />
-                    </Grid>
-                    <Grid item xs={12} md={7}>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-                            <BankingWidgetSummary
-                                title="Income"
-                                icon={'eva:diagonal-arrow-right-up-fill'}
-                                percent={2.6}
-                                total={6729}
-                                chartData={[111, 136, 76, 108, 74, 54, 57, 84]}
-                            />
-                            <BankingWidgetSummary
-                                title="Expenses"
-                                color="warning"
-                                icon={'eva:diagonal-arrow-right-down-fill'}
-                                percent={-0.5}
-                                total={2930}
-                                chartData={[111, 136, 76, 108, 74, 54, 57, 84]}
-                            />
-                        </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={5}>
-                        <BankingCurrentBalance />
-                    </Grid>
-
-                    <Grid item xs={12} md={12}>
-                        <Stack spacing={3}>
-                            <BankingBalanceStatistics />
-                        </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={8}>
-                        <BankingExpensesCategories />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <BankingLoanWheel />
-                    </Grid>
-                </Grid>
-            </Container>
+            {/* Tab Content */}
+            <ContentStyle>
+                {loading ? (
+                    <Typography>Loading...</Typography>
+                ) : error ? (
+                    <Typography color="error">{error}</Typography>
+                ) : (
+                    <>
+                        {currentTab === 0 && <DashboardSection data={transactionData} />}
+                        {currentTab === 1 && (
+                            <Typography variant="h4">Accounts Section - Work in Progress</Typography>
+                        )}
+                        {currentTab === 2 && (
+                            <Typography variant="h4">Liabilities Section - Work in Progress</Typography>
+                        )}
+                    </>
+                )}
+            </ContentStyle>
         </RootStyle>
     );
 }
