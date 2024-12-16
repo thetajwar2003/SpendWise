@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { fetchTransactionSummary } from '../api/transactions';
+import { fetchTransactionSummary, fetchUserBankAccounts } from '../api/transactions';
 import TabsLayout from '../../layouts/TabLayout';
 import DashboardSection from '../../sections/DashboardSection';
+import AccountsList from '../../sections/AccountsList';
 
 const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -23,25 +24,57 @@ export default function Dashboard() {
     const [transactionData, setTransactionData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userId, setUserId] = useState(null);
+    const [accessToken, setAccessToken] = useState(null);
+    const [accounts, setAccounts] = useState([]);
+    const [loadingAccounts, setLoadingAccounts] = useState(false);
 
-    const user_id = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null;
-    const access_token = typeof window !== 'undefined' ? localStorage.getItem("access_token") : null;
+    useEffect(() => {
+        // Safely access localStorage in client-side
+        if (typeof window !== 'undefined') {
+            const storedUserId = localStorage.getItem('user_id');
+            const storedAccessToken = localStorage.getItem('access_token');
+            setUserId(storedUserId);
+            setAccessToken(storedAccessToken);
+        }
+    }, []);
+
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            if (currentTab === 1 && accessToken && userId) {
+                try {
+                    setLoadingAccounts(true);
+                    const accountData = await fetchUserBankAccounts(accessToken, userId);
+                    setAccounts(accountData);
+                } catch (error) {
+                    console.error('Error fetching accounts:', error);
+                } finally {
+                    setLoadingAccounts(false);
+                }
+            }
+        };
+
+        fetchAccounts();
+    }, [currentTab, accessToken, userId]);
+
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchTransactionSummary(access_token, user_id);
-                setTransactionData(data);
-            } catch (error) {
-                setError('Failed to fetch transaction summary');
-            } finally {
-                setLoading(false);
+            if (userId && accessToken) {
+                try {
+                    setLoading(true);
+                    const data = await fetchTransactionSummary(accessToken, userId);
+                    setTransactionData(data);
+                } catch (error) {
+                    setError('Failed to fetch transaction summary');
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
-    }, [access_token, user_id]);
+    }, [userId, accessToken]);
 
     const handleTabChange = (event, newValue) => {
         setCurrentTab(newValue);
@@ -55,10 +88,7 @@ export default function Dashboard() {
 
     return (
         <RootStyle>
-            {/* Tabs Navigation */}
             <TabsLayout tabs={tabs} currentTab={currentTab} onTabChange={handleTabChange} />
-
-            {/* Tab Content */}
             <ContentStyle>
                 {loading ? (
                     <Typography>Loading...</Typography>
@@ -66,13 +96,15 @@ export default function Dashboard() {
                     <Typography color="error">{error}</Typography>
                 ) : (
                     <>
-                        {currentTab === 0 && <DashboardSection data={transactionData} />}
-                        {currentTab === 1 && (
-                            <Typography variant="h4">Accounts Section - Work in Progress</Typography>
+                        {currentTab === 0 && (
+                            <DashboardSection
+                                data={transactionData}
+                                userId={userId}
+                                accessToken={accessToken}
+                            />
                         )}
-                        {currentTab === 2 && (
-                            <Typography variant="h4">Liabilities Section - Work in Progress</Typography>
-                        )}
+                        {currentTab === 1 && <AccountsList accounts={accounts} loading={loadingAccounts} />}
+                        {currentTab === 2 && <Typography variant="h4">Liabilities</Typography>}
                     </>
                 )}
             </ContentStyle>

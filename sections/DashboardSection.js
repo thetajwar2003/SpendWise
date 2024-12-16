@@ -6,38 +6,47 @@ import BankingBalanceStatistics from '../components/bank/BankingBalanceStatistic
 import BankingExpensesCategories from '../components/bank/BankingExpensesCategories';
 import BankingLoanWheel from '../components/bank/BankingLoanWheel';
 import { extractTransactionAmounts } from '../utils/extractTransactionAmounts';
-import { fetchMonthlySummary } from '../pages/api/transactions';
+import { fetchMonthlySummary, fetchExpenseCategories } from '../pages/api/transactions';
 
-
-export default function DashboardSection({ data }) {
+export default function DashboardSection({ data, userId, accessToken }) {
     const income = data?.income || 0;
     const expenses = data?.expenses || 0;
 
     const [monthlySummary, setMonthlySummary] = useState([]);
-
-    const user_id = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
-    const access_token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const [expenseCategories, setExpenseCategories] = useState({
+        categories: [],
+        totalCategories: 0,
+        totalExpenses: 0,
+    });
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const summary = await fetchMonthlySummary(access_token, user_id);
-                setMonthlySummary(summary);
+                if (accessToken && userId) {
+                    const summary = await fetchMonthlySummary(accessToken, userId);
+                    setMonthlySummary(summary);
+
+                    const response = await fetchExpenseCategories(accessToken, userId);
+                    setExpenseCategories({
+                        categories: response.categories || [],
+                        totalCategories: response.total_categories || 0,
+                        totalExpenses: response.total_expenses || 0,
+                    });
+                }
             } catch (error) {
-                console.error('Error fetching monthly summary:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
         fetchData();
-    }, [access_token, user_id]);
+    }, [accessToken, userId]);
 
     return (
         <>
-            <Typography variant="h2">Welcome John!</Typography>
+            <Typography variant="h2">Welcome Back!</Typography>
             <Divider sx={{ mb: 3 }} />
 
             <Grid container spacing={3}>
-                {/* Income and Expense Widgets */}
                 <Grid item xs={12} md={7}>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                         <BankingWidgetSummary
@@ -58,23 +67,25 @@ export default function DashboardSection({ data }) {
                     </Stack>
                 </Grid>
 
-                {/* Current Balance Widget */}
                 <Grid item xs={12} md={5}>
                     <BankingCurrentBalance />
                 </Grid>
 
-                {/* Balance Statistics */}
                 <Grid item xs={12} md={12}>
                     <BankingBalanceStatistics monthlyData={monthlySummary} />
                 </Grid>
 
-                {/* Expenses Categories and Loan Wheel */}
-                <Grid item xs={12} md={8}>
-                    <BankingExpensesCategories />
+                <Grid item xs={12} md={12}>
+                    <BankingExpensesCategories
+                        categories={expenseCategories.categories}
+                        totalCategories={expenseCategories.totalCategories}
+                        totalExpenses={expenseCategories.totalExpenses}
+                    />
                 </Grid>
-                <Grid item xs={12} md={4}>
+
+                {/* <Grid item xs={12} md={4}>
                     <BankingLoanWheel />
-                </Grid>
+                </Grid> */}
             </Grid>
         </>
     );

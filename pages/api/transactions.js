@@ -37,3 +37,50 @@ export const fetchMonthlySummary = async (access_token, user_id) => {
         throw error;
     }
 };
+
+export const fetchExpenseCategories = async (access_token, user_id) => {
+    const response = await axios.post('http://127.0.0.1:5000/plaid/transactions/expense-categories', {
+        user_id,
+    }, {
+        headers: {
+            Authorization: `Bearer ${ access_token }`,
+        },
+    });
+
+    return response.data;
+};
+
+export const fetchUserBankAccounts = async (accessToken, userId) => {
+    const response = await fetch('http://127.0.0.1:5000/plaid/get_user_bank_info', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${ accessToken }`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch user bank accounts');
+    }
+
+    const data = await response.json();
+    return data.accounts.filter((account) => account.type == 'depository'); // Exclude loans
+};
+
+export async function fetchAccountDetails(accessToken, userId, accountId) {
+    const response = await fetch('http://127.0.0.1:5000/plaid/get_account_details', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${ accessToken }`,
+        },
+        body: JSON.stringify({ user_id: userId, account_id: accountId }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch account details');
+    }
+
+    return await response.json();
+}
