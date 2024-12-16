@@ -6,6 +6,9 @@ import TabsLayout from '../../layouts/TabLayout';
 import DashboardSection from '../../sections/DashboardSection';
 import AccountsList from '../../sections/AccountsList';
 
+import { liabilities } from '../../mock/liabilities';
+import LiabilitiesList from '../../sections/LiabilitiesList';
+
 const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
     height: '100vh',
@@ -104,7 +107,7 @@ export default function Dashboard() {
                             />
                         )}
                         {currentTab === 1 && <AccountsList accounts={accounts} loading={loadingAccounts} />}
-                        {currentTab === 2 && <Typography variant="h4">Liabilities</Typography>}
+                        {currentTab === 2 && <LiabilitiesList liabilities={liabilities} loading={loading} />}
                     </>
                 )}
             </ContentStyle>
