@@ -75,12 +75,11 @@ Our app provides a **modern, ad-free, and highly customizable solution** for per
 
 ### Backend:
 
-- **AWS Services:** Lambda, DynamoDB, S3, Cognito, Amplify
+- **AWS Services:** DynamoDBand Cognito
 
 ### API Integration:
 
 - **Plaid API:** Secure bank account and financial data synchronization.
-- **Stripe:** Payment integration for advanced features.
 
 ---
 
