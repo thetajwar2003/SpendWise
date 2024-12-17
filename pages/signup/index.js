@@ -150,6 +150,7 @@ export default function SignUp() {
                         fullWidth
                         id="password"
                         label="Password"
+                        placeholder="Password"
                         type="password"
                         {...register("password")}
                         error={!!errors.password}
@@ -161,6 +162,7 @@ export default function SignUp() {
                         fullWidth
                         id="confirmPassword"
                         label="Confirm Password"
+                        placeholder="Confirm Password"
                         type="password"
                         {...register("confirmPassword")}
                         error={!!errors.confirmPassword}
