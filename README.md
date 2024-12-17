@@ -75,11 +75,67 @@ Our app provides a **modern, ad-free, and highly customizable solution** for per
 
 ### Backend:
 
-- **AWS Services:** DynamoDBand Cognito
+- **AWS Services:** DynamoDB and Cognito
 
 ### API Integration:
 
 - **Plaid API:** Secure bank account and financial data synchronization.
+
+---
+
+## AWS Cognito Integration
+
+The frontend integrates **AWS Cognito** for secure user authentication and session management. After a successful login:
+
+- **Access Token**: Authorizes user requests to protected backend routes.
+- **ID Token**: Provides user identity and claims for frontend usage.
+- **Refresh Token**: Enables session renewal without re-authentication.
+
+These tokens are stored securely and used to manage authenticated sessions.
+
+---
+
+## CI/CD Pipeline
+
+We have implemented **CI/CD pipelines** using **GitHub Actions** to ensure code quality and automate the deployment process. The pipeline performs the following tasks:
+
+1. **Dependency Installation**: Installs project dependencies.
+2. **Testing**: Runs automated tests to verify code quality.
+3. **Build Process**: Builds the production-ready Next.js project.
+
+### Workflow Configuration:
+
+```yaml
+name: CI Pipeline - Frontend
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+```
 
 ---
 
@@ -88,3 +144,51 @@ Our app provides a **modern, ad-free, and highly customizable solution** for per
 - Advanced reporting with AI insights.
 - Mobile application for iOS and Android.
 - Integration with investment platforms for holistic financial tracking.
+
+---
+
+## Project Setup Instructions
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/your-username/spendwise-frontend.git
+   cd spendwise-frontend
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**:
+
+   Create a `.env.local` file in the root directory with the following variables:
+
+   ```plaintext
+   NEXT_PUBLIC_COGNITO_USER_POOL_ID=your-user-pool-id
+   NEXT_PUBLIC_COGNITO_CLIENT_ID=your-client-id
+   NEXT_PUBLIC_API_BASE_URL=https://your-backend-api-url
+   ```
+
+4. **Run the development server**:
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Build the project for production**:
+
+   ```bash
+   npm run build
+   ```
+
+---
+
+## Deployment
+
+The frontend is deployed to **Vercel**. The CI/CD pipeline ensures:
+
+- Code testing and validation before deployment.
+- Automatic deployment on every push to the `master` branch.
