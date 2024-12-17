@@ -81,7 +81,7 @@ export default function SignUp() {
         token: linkToken,
         onSuccess: (publicToken) => {
             // Send the public token to the backend to exchange for an access token
-            axios.post("http://127.0.0.1:5000/plaid/exchange_public_token", { public_token: publicToken, user_id: userId })
+            axios.post(`${ API_URL }/plaid/exchange_public_token`, { public_token: publicToken, user_id: userId })
                 .then((response) => {
                     router.push("/login");
                 })
