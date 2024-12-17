@@ -19,6 +19,7 @@ const schema = yup.object({
     email: yup.string().email("Invalid email address").required("Email is required"),
     password: yup.string().required("Password is required"),
 });
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Login() {
     const router = useRouter();
@@ -39,7 +40,7 @@ export default function Login() {
 
         try {
             // Make the login request
-            const response = await axios.post("http://127.0.0.1:5000/auth/login", {
+            const response = await axios.post(`${ API_URL }/auth/login`, {
                 email: data.email,
                 password: data.password,
             });

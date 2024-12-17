@@ -1,9 +1,10 @@
 import axios from 'axios';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const fetchTransactionSummary = async (token, userId) => {
     try {
         const response = await axios.post(
-            'http://127.0.0.1:5000/plaid/transactions/summary',
+            `${ API_URL }/plaid/transactions/summary`,
             { user_id: userId },
             {
                 headers: {
@@ -22,7 +23,7 @@ export const fetchTransactionSummary = async (token, userId) => {
 export const fetchMonthlySummary = async (access_token, user_id) => {
     try {
         const response = await axios.post(
-            'http://127.0.0.1:5000/plaid/transactions/monthly-summary',
+            `${ API_URL }/plaid/transactions/monthly-summary`,
             { user_id },
             {
                 headers: {
@@ -39,7 +40,7 @@ export const fetchMonthlySummary = async (access_token, user_id) => {
 };
 
 export const fetchExpenseCategories = async (access_token, user_id) => {
-    const response = await axios.post('http://127.0.0.1:5000/plaid/transactions/expense-categories', {
+    const response = await axios.post(`${ API_URL }/plaid/transactions/expense-categories`, {
         user_id,
     }, {
         headers: {
@@ -51,7 +52,7 @@ export const fetchExpenseCategories = async (access_token, user_id) => {
 };
 
 export const fetchUserBankAccounts = async (accessToken, userId) => {
-    const response = await fetch('http://127.0.0.1:5000/plaid/get_user_bank_info', {
+    const response = await fetch(`${ API_URL }/plaid/get_user_bank_info`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -69,7 +70,7 @@ export const fetchUserBankAccounts = async (accessToken, userId) => {
 };
 
 export async function fetchAccountDetails(accessToken, userId, accountId) {
-    const response = await fetch('http://127.0.0.1:5000/plaid/get_account_details', {
+    const response = await fetch(`${ API_URL }/plaid/get_account_details`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

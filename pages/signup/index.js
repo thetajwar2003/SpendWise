@@ -29,6 +29,8 @@ const schema = yup.object({
         .required("Confirm Password is required"),
 });
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function SignUp() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -47,13 +49,13 @@ export default function SignUp() {
         setLoading(true);
         try {
             // Send signup data to backend
-            const signupResponse = await axios.post("http://127.0.0.1:5000/auth/register", data);
+            const signupResponse = await axios.post(`${ API_URL }/auth/register`, data);
 
             if (signupResponse.status === 201) {
                 setUserId(signupResponse.data.user_id);
                 // Fetch Plaid Link token
                 const tokenResponse = await axios.post(
-                    "http://127.0.0.1:5000/plaid/create_link_token",
+                    `${ API_URL }/plaid/create_link_token`,
                     {
                         user_id: signupResponse.data.user_id, // Replace with actual unique user ID
                     },
